@@ -31,7 +31,7 @@ public final class InfoStatusWriter {
                 return;
             }
             last = body;
-            Path f = net.fabricmc.loader.api.FabricLoader.getInstance().getGameDir().resolve("信息状态.txt");
+            Path f = Files2.path("信息状态.txt");
             Files.writeString(f, body, StandardCharsets.UTF_8);
         } catch (Throwable ignored) {
         }

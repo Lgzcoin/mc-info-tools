@@ -27,10 +27,17 @@ public final class DeathTracker {
     }
 
     private static Path file() {
-        return net.fabricmc.loader.api.FabricLoader.getInstance().getGameDir().resolve("死亡点.txt");
+        return Files2.path("死亡点.txt");
     }
 
+    private static boolean loaded = false;
+    private static String owner = "";
+
     public static void load() {
+        if (loaded || Files2.name().equals("未进世界")) {
+            return;
+        }
+        loaded = true;
         try {
             Path f = file();
             if (!Files.exists(f)) {
@@ -75,6 +82,18 @@ public final class DeathTracker {
         }
         if (!dying) {
             recordedThisDeath = false;
+        }
+        String me = Files2.name();
+        if (!me.equals(owner)) {
+            owner = me;
+            loaded = false;
+            lastTime = "";
+            lastDim = "";
+        }
+        if (!loaded) {
+            load();
+        }
+        if (!dying) {
             return;
         }
         if (recordedThisDeath) {

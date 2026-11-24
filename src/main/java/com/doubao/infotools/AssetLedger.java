@@ -40,10 +40,17 @@ public final class AssetLedger {
     }
 
     private static Path gameFile(String name) {
-        return net.fabricmc.loader.api.FabricLoader.getInstance().getGameDir().resolve(name);
+        return Files2.path(name);
     }
 
+    private static boolean loaded = false;
+    private static String owner = "";
+
     public static void load() {
+        if (loaded || Files2.name().equals("未进世界")) {
+            return;
+        }
+        loaded = true;
         try {
             Path f = gameFile("资产今日.txt");
             if (!Files.exists(f)) {
@@ -101,6 +108,19 @@ public final class AssetLedger {
             LocalPlayer p = mc.player;
             if (p == null) {
                 return;
+            }
+            String me = Files2.name();
+            if (!me.equals(owner)) {
+                owner = me;
+                LAST.clear();
+                GAIN.clear();
+                LOSS.clear();
+                day = "";
+                baselineDone = false;
+                loaded = false;
+            }
+            if (!loaded) {
+                load();
             }
             if (!force && ticks == 0) {
                 return;

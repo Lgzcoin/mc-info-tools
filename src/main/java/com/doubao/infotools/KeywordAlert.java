@@ -21,7 +21,7 @@ public final class KeywordAlert {
     }
 
     private static Path file() {
-        return net.fabricmc.loader.api.FabricLoader.getInstance().getGameDir().resolve("告警记录.txt");
+        return Files2.path("告警记录.txt");
     }
 
     public static boolean enabled() {
