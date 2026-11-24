@@ -60,7 +60,7 @@ public final class KeywordAlert {
         String low = text.toLowerCase(Locale.ROOT);
         for (String kw : InfoTools.config().keywords) {
             if (!kw.isBlank() && low.contains(kw.toLowerCase(Locale.ROOT))) {
-                hit(kw, text);
+                hit(kw, text, true);
                 return "命中「" + kw + "」：模板没问题，真的出现就会这样提示。";
             }
         }
@@ -68,10 +68,14 @@ public final class KeywordAlert {
     }
 
     private static void hit(String kw, String text) {
+        hit(kw, text, false);
+    }
+
+    private static void hit(String kw, String text, boolean force) {
         long now = System.currentTimeMillis();
         String key = kw + "|" + text;
         Long last = RECENT.get(key);
-        if (last != null && now - last < 3000) {
+        if (!force && last != null && now - last < 3000) {
             return;
         }
         RECENT.put(key, now);

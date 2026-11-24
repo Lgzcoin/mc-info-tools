@@ -21,6 +21,7 @@ public final class DropTracker {
     public static final int DESPAWN_TICKS = 6000;
 
     private static int ticks = 0;
+    private static String scene = "";
     private static final Set<Integer> WARNED = new HashSet<>();
 
     private DropTracker() {
@@ -37,6 +38,11 @@ public final class DropTracker {
             if (p == null || level == null) {
                 WARNED.clear();
                 return;
+            }
+            String nowScene = Files2.name() + "|" + level.dimension().identifier();
+            if (!nowScene.equals(scene)) {
+                scene = nowScene;
+                WARNED.clear();
             }
             int warnTicks = Math.max(5, InfoTools.config().dropWarnSeconds) * 20;
             for (ItemEntity e : nearby(mc)) {

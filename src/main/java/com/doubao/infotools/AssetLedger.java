@@ -286,7 +286,7 @@ public final class AssetLedger {
         StringBuilder sb = new StringBuilder();
         sb.append("资产（背包+仓库索引）：").append(kinds(LAST)).append(" 种 / ").append(total(LAST)).append(" 个");
         if (lastSnapMs > 0) {
-            sb.append("，最近快照 ").append(LocalDateTime.now().format(HMS));
+            sb.append("，最近快照 ").append(formatTime(lastSnapMs));
         }
         sb.append('\n');
         sb.append("今日收入：").append(top(GAIN, 6, "+")).append('\n');
@@ -295,6 +295,15 @@ public final class AssetLedger {
             sb.append("（还没变化）");
         }
         return sb.toString();
+    }
+
+    private static String formatTime(long ms) {
+        try {
+            return java.time.LocalDateTime.ofInstant(java.time.Instant.ofEpochMilli(ms),
+                    java.time.ZoneId.systemDefault()).format(HMS);
+        } catch (Throwable t) {
+            return "?";
+        }
     }
 
     public static String logTail() {

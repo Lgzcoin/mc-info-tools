@@ -45,6 +45,7 @@ public final class InfoStatusWriter {
         sb.append("死亡点=").append(DeathTracker.line()).append('\n');
         sb.append("掉落物=").append(DropTracker.line(mc)).append('\n');
         sb.append("告警=").append(KeywordAlert.line()).append('\n');
+        sb.append("行情=").append(Market.line()).append('\n');
         return sb.toString();
     }
 }

@@ -93,6 +93,61 @@ public final class InfoCommands {
                                                     return 1;
                                                 })))
                         )
+                        .then(ClientCommands.literal("price")
+                                .executes(ctx -> {
+                                    reply(ctx, Market.overview());
+                                    return 1;
+                                })
+                                .then(ClientCommands.literal("list").executes(ctx -> {
+                                    reply(ctx, Market.overview());
+                                    return 1;
+                                }))
+                                .then(ClientCommands.literal("clear").executes(ctx -> {
+                                    Market.clear();
+                                    reply(ctx, "本号行情已清空（其他号的记录还在）。");
+                                    return 1;
+                                }))
+                                .then(ClientCommands.literal("test")
+                                        .then(ClientCommands.argument("一句话", StringArgumentType.greedyString())
+                                                .executes(ctx -> {
+                                                    reply(ctx, Market.test(StringArgumentType.getString(ctx, "一句话")));
+                                                    return 1;
+                                                })))
+                                .then(ClientCommands.literal("alert")
+                                        .executes(ctx -> {
+                                            reply(ctx, Market.line());
+                                            return 1;
+                                        })
+                                        .then(ClientCommands.literal("on").executes(ctx -> {
+                                            InfoTools.config().priceEnabled = true;
+                                            InfoTools.saveConfig();
+                                            reply(ctx, "比价告警已开（便宜货会提醒）。");
+                                            return 1;
+                                        }))
+                                        .then(ClientCommands.literal("off").executes(ctx -> {
+                                            InfoTools.config().priceEnabled = false;
+                                            InfoTools.saveConfig();
+                                            reply(ctx, "比价告警已关（仍会继续记录行情）。");
+                                            return 1;
+                                        }))
+                                        .then(ClientCommands.argument("折扣", StringArgumentType.word())
+                                                .executes(ctx -> {
+                                                    String v = StringArgumentType.getString(ctx, "折扣");
+                                                    try {
+                                                        int pct = Math.max(30, Math.min(99, Integer.parseInt(v)));
+                                                        InfoTools.config().priceDiscountPercent = pct;
+                                                        InfoTools.saveConfig();
+                                                        reply(ctx, "已设置：卖价低于历史均价 " + pct + "% 就提醒。");
+                                                    } catch (NumberFormatException e) {
+                                                        reply(ctx, "折扣要写数字，比如 /info price alert 75");
+                                                    }
+                                                    return 1;
+                                                })))
+                                .then(ClientCommands.argument("物品", StringArgumentType.word())
+                                        .executes(ctx -> {
+                                            reply(ctx, Market.stats(StringArgumentType.getString(ctx, "物品")));
+                                            return 1;
+                                        })))
                         .then(ClientCommands.literal("reload").executes(ctx -> {
                             InfoTools.reloadConfig();
                             reply(ctx, "配置已重读（信息工具配置.txt）。");
@@ -122,7 +177,8 @@ public final class InfoCommands {
         sb.append(AssetLedger.summary()).append('\n');
         sb.append("掉落物：").append(DropTracker.line(mc)).append('\n');
         sb.append(DeathTracker.summary(mc)).append('\n');
-        sb.append("关键词告警：").append(KeywordAlert.line());
+        sb.append("关键词告警：").append(KeywordAlert.line()).append('\n');
+        sb.append("行情：").append(Market.line());
         reply(ctx, sb.toString());
         return 1;
     }
@@ -140,6 +196,11 @@ public final class InfoCommands {
                 "/info alert add 词     加一个关键词",
                 "/info alert del 词     删一个关键词",
                 "/info alert test 话    试一句话，看会不会响",
+                "/info price           行情总览",
+                "/info price 钻石       某物品的卖价/收价、便宜线",
+                "/info price test 话    试一句报价，看能不能识别",
+                "/info price alert on|off|75   便宜货提醒开关 / 阈值",
+                "/info price clear      清空本号行情",
                 "/info reload          重读 信息工具配置.txt");
     }
 

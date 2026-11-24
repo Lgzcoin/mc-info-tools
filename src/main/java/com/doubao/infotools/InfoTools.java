@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
  */
 public class InfoTools implements ClientModInitializer {
     public static final String MOD_ID = "infotools";
-    public static final String MOD_VERSION = "1.0.0";
+    public static final String MOD_VERSION = "1.1.0";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
     private static InfoConfig config;
@@ -44,14 +44,23 @@ public class InfoTools implements ClientModInitializer {
         InfoCommands.register();
 
         // 聊天与系统消息都看一眼，服务器把聊天当系统消息发也能命中
-        ClientReceiveMessageEvents.GAME.register((message, overlay) ->
-                KeywordAlert.onMessage(safeText(message)));
+        ClientReceiveMessageEvents.GAME.register((message, overlay) -> {
+            if (overlay) {
+                return;
+            }
+            onChat(safeText(message));
+        });
         ClientReceiveMessageEvents.CHAT.register((message, signed, sender, params, timestamp) ->
-                KeywordAlert.onMessage(safeText(message)));
+                onChat(safeText(message)));
 
         ClientTickEvents.END_CLIENT_TICK.register(InfoTools::tick);
 
         LOGGER.info("信息工具 v{} 已加载：游戏里敲 /info 看状态", MOD_VERSION);
+    }
+
+    private static void onChat(String text) {
+        KeywordAlert.onMessage(text);
+        Market.onMessage(text);
     }
 
     private static String safeText(net.minecraft.network.chat.Component c) {
