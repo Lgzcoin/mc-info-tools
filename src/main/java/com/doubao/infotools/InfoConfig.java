@@ -17,6 +17,8 @@ public final class InfoConfig {
     public boolean alertEnabled = true;
     public boolean priceEnabled = true;
     public int priceDiscountPercent = 80;
+    public final List<String> shopKeywords = new ArrayList<>(Arrays.asList(
+            "商店", "店铺", "摊位", "促销", "特价", "甩卖", "上新", "批发"));
     public final List<String> keywords = new ArrayList<>(Arrays.asList(
             "管理员", "清人", "重启", "封号", "封禁", "TPA", "交易", "收人"));
     public int assetSnapSeconds = 60;
@@ -56,6 +58,15 @@ public final class InfoConfig {
                     case "关键词告警" -> c.alertEnabled = bool(val, true);
                     case "比价" -> c.priceEnabled = bool(val, true);
                     case "比价便宜线" -> c.priceDiscountPercent = clamp(parseInt(val, 80), 30, 99);
+                    case "商店关键词" -> {
+                        c.shopKeywords.clear();
+                        for (String s2 : val.split("[,，、]")) {
+                            String k = s2.trim();
+                            if (!k.isEmpty()) {
+                                c.shopKeywords.add(k);
+                            }
+                        }
+                    }
                     case "关键词" -> {
                         c.keywords.clear();
                         for (String s : val.split("[,，、]")) {
@@ -85,6 +96,7 @@ public final class InfoConfig {
             sb.append("# 关键词告警：开 / 关（聊天命中关键词时提示并记录）\n");
             sb.append("# 比价：开 / 关（聊天报价自动记录，便宜货提醒）\n");
             sb.append("# 比价便宜线：卖价低于历史均价的百分之几就提醒（30~99）\n");
+            sb.append("# 商店关键词：聊天里出现这些词就把整条记成商店广告（逗号分隔）\n");
             sb.append("# 关键词：用逗号分隔，聊天里出现就告警\n");
             sb.append("# 资产快照秒：多久记一次背包+仓库资产（10~3600）\n");
             sb.append("# 掉落提醒秒：掉落物还剩多少秒时提醒（5~600）\n\n");
@@ -92,6 +104,7 @@ public final class InfoConfig {
             sb.append("关键词告警 = ").append(alertEnabled ? "开" : "关").append('\n');
             sb.append("比价 = ").append(priceEnabled ? "开" : "关").append('\n');
             sb.append("比价便宜线 = ").append(priceDiscountPercent).append('\n');
+            sb.append("商店关键词 = ").append(String.join(",", shopKeywords)).append('\n');
             sb.append("关键词 = ").append(String.join(",", keywords)).append('\n');
             sb.append("资产快照秒 = ").append(assetSnapSeconds).append('\n');
             sb.append("掉落提醒秒 = ").append(dropWarnSeconds).append('\n');

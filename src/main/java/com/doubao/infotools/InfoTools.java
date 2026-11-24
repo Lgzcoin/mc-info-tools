@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
  */
 public class InfoTools implements ClientModInitializer {
     public static final String MOD_ID = "infotools";
-    public static final String MOD_VERSION = "1.1.0";
+    public static final String MOD_VERSION = "1.2.0";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
     private static InfoConfig config;
@@ -48,19 +48,30 @@ public class InfoTools implements ClientModInitializer {
             if (overlay) {
                 return;
             }
-            onChat(safeText(message));
+            onChat(safeText(message), "系统");
         });
         ClientReceiveMessageEvents.CHAT.register((message, signed, sender, params, timestamp) ->
-                onChat(safeText(message)));
+                onChat(safeText(message), senderName(sender)));
 
         ClientTickEvents.END_CLIENT_TICK.register(InfoTools::tick);
 
         LOGGER.info("信息工具 v{} 已加载：游戏里敲 /info 看状态", MOD_VERSION);
     }
 
-    private static void onChat(String text) {
+    private static void onChat(String text, String sender) {
         KeywordAlert.onMessage(text);
         Market.onMessage(text);
+        ShopAd.onMessage(text, sender);
+    }
+
+    private static String senderName(com.mojang.authlib.GameProfile profile) {
+        try {
+            if (profile != null && profile.name() != null) {
+                return profile.name();
+            }
+        } catch (Throwable ignored) {
+        }
+        return "玩家";
     }
 
     private static String safeText(net.minecraft.network.chat.Component c) {

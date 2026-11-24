@@ -3,7 +3,7 @@
   "id": "infotools",
   "version": "${version}",
   "name": "信息工具",
-  "description": "只读型信息采集：资产日报、掉落物倒计时与死亡点、聊天关键词告警。不改背包、不动方块、不需要 OP。",
+  "description": "只读型信息采集：资产日报、掉落物倒计时与死亡点、聊天关键词告警、聊天市场比价、商店广告索引。不改背包、不动方块、不需要 OP。",
   "authors": ["Doubao"],
   "license": "MIT",
   "environment": "client",

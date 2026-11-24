@@ -174,30 +174,41 @@ public final class Market {
         if (all.isEmpty()) {
             return "还没有报价记录。聊天里出现「收钻石 5000一组」这类会自己记；\n也可以 /info price test 收钻石 5000一组 试一下。";
         }
-        Map<String, Integer> counts = new LinkedHashMap<>();
+        Map<String, List<Rec>> byItem = new LinkedHashMap<>();
         for (Rec r : all) {
-            counts.merge(r.item(), 1, Integer::sum);
+            byItem.computeIfAbsent(r.item(), k -> new ArrayList<>()).add(r);
         }
-        List<Map.Entry<String, Integer>> top = new ArrayList<>(counts.entrySet());
-        top.sort(Comparator.<Map.Entry<String, Integer>>comparingInt(Map.Entry::getValue).reversed());
-        StringBuilder sb = new StringBuilder("行情共 ").append(all.size()).append(" 条，")
-                .append(counts.size()).append(" 种物品。");
-        sb.append("\n最常报价：");
-        for (int i = 0; i < Math.min(5, top.size()); i++) {
-            if (i > 0) {
-                sb.append("、");
-            }
-            sb.append(Names.of(top.get(i).getKey())).append(' ').append(top.get(i).getValue()).append(" 条");
-        }
-        sb.append("\n最近：");
         List<Rec> last = new ArrayList<>(all);
         last.sort(Comparator.comparingLong(Rec::time).reversed());
-        for (int i = 0; i < Math.min(3, last.size()); i++) {
-            sb.append('\n').append(ago(last.get(i).time())).append(' ')
-                    .append(last.get(i).dir()).append(' ').append(Names.of(last.get(i).item()))
-                    .append(' ').append(fmt(last.get(i).perPiece())).append("/个");
+        StringBuilder sb = new StringBuilder("行情 ").append(all.size()).append(" 条 / ")
+                .append(byItem.size()).append(" 种，最近 ").append(ago(last.get(0).time()));
+        List<Map.Entry<String, List<Rec>>> top = new ArrayList<>(byItem.entrySet());
+        top.sort(Comparator.<Map.Entry<String, List<Rec>>>comparingInt(e -> -e.getValue().size()));
+        for (int i = 0; i < Math.min(7, top.size()); i++) {
+            String id = top.get(i).getKey();
+            List<Double> sell = new ArrayList<>();
+            List<Double> buy = new ArrayList<>();
+            for (Rec r : top.get(i).getValue()) {
+                if ("卖".equals(r.dir)) {
+                    sell.add(r.perPiece());
+                } else {
+                    buy.add(r.perPiece());
+                }
+            }
+            sb.append('\n').append(pad(Names.of(id), 8));
+            if (!sell.isEmpty()) {
+                sb.append(" 卖 ").append(fmt(median(sell))).append("（").append(sell.size()).append("）");
+            }
+            if (!buy.isEmpty()) {
+                sb.append(" 收 ").append(fmt(median(buy))).append("（").append(buy.size()).append("）");
+            }
         }
-        sb.append("\n查某个物品：/info price 钻石");
+        if (top.size() > 7) {
+            sb.append("\n…还有 ").append(top.size() - 7).append(" 种，用 /info price 物品名 查");
+        }
+        sb.append("\n最近：").append(last.get(0).dir()).append(' ').append(Names.of(last.get(0).item()))
+                .append(' ').append(fmt(last.get(0).perPiece())).append("/个");
+        sb.append("\n单品：/info price 钻石　便宜货：/info price cheap");
         return sb.toString();
     }
 
@@ -213,21 +224,49 @@ public final class Market {
         }
         List<Double> sellP = new ArrayList<>();
         List<Double> buyP = new ArrayList<>();
+        Rec lastSell = null;
+        Rec lastBuy = null;
         for (Rec r : list) {
             if ("卖".equals(r.dir)) {
                 sellP.add(r.perPiece());
+                lastSell = r;
             } else {
                 buyP.add(r.perPiece());
+                lastBuy = r;
             }
         }
-        StringBuilder sb = new StringBuilder(Names.of(id)).append("：共 ").append(list.size()).append(" 条报价");
+        StringBuilder sb = new StringBuilder(Names.of(id)).append("：共 ").append(list.size())
+                .append(" 条，最近 ").append(ago(list.get(list.size() - 1).time()));
         if (!sellP.isEmpty()) {
-            sb.append("\n卖的：").append(sellP.size()).append(" 条，中位 ").append(fmt(median(sellP)))
-                    .append("/个，最低 ").append(fmt(min(sellP))).append("/个");
+            double med = median(sellP);
+            sb.append("\n卖：").append(sellP.size()).append(" 条，中位 ").append(fmt(med))
+                    .append("，最低 ").append(fmt(min(sellP))).append("，最高 ").append(fmt(max(sellP)));
+            if (lastSell != null) {
+                double diff = (lastSell.perPiece() - med) / med * 100;
+                sb.append("\n最近卖价 ").append(fmt(lastSell.perPiece())).append("，");
+                if (Math.abs(diff) < 5) {
+                    sb.append("跟中位差不多");
+                } else {
+                    sb.append(diff > 0 ? "比中位高 " : "比中位低 ").append(Math.abs((int) Math.round(diff))).append("%");
+                }
+            }
         }
         if (!buyP.isEmpty()) {
-            sb.append("\n收的：").append(buyP.size()).append(" 条，中位 ").append(fmt(median(buyP)))
-                    .append("/个，最高 ").append(fmt(max(buyP))).append("/个");
+            sb.append("\n收：").append(buyP.size()).append(" 条，中位 ").append(fmt(median(buyP)))
+                    .append("，最高 ").append(fmt(max(buyP)));
+            if (lastBuy != null) {
+                sb.append("，最近收价 ").append(fmt(lastBuy.perPiece()));
+            }
+        }
+        if (!sellP.isEmpty() && !buyP.isEmpty()) {
+            double sm = median(sellP);
+            double bm = median(buyP);
+            double spread = (sm - bm) / sm * 100;
+            sb.append("\n价差：收 ").append(fmt(bm)).append(" / 卖 ").append(fmt(sm))
+                    .append("，差 ").append(Math.round(spread)).append("%");
+            if (spread >= 15) {
+                sb.append("（低价收、高价卖有得赚）");
+            }
         }
         sb.append("\n最近 5 条：");
         List<Rec> recent = new ArrayList<>(list);
@@ -238,9 +277,55 @@ public final class Market {
                     .append(fmt(r.perPiece())).append("/个（").append(fmt(r.raw())).append('/')
                     .append(r.unit()).append("）");
         }
+        int pct = Math.max(30, Math.min(99, InfoTools.config().priceDiscountPercent));
         if (sellP.size() >= 3) {
             double med = median(sellP);
-            sb.append("\n参考：卖价低于 ").append(fmt(med * 0.8)).append("/个 就算便宜。");
+            sb.append("\n便宜线：卖价 ≤ ").append(fmt(med * pct / 100.0)).append("/个 时提醒（中位 ")
+                    .append(pct).append("%）");
+        }
+        return sb.toString();
+    }
+
+    /** 现在就能捡的便宜货：每个物品最近一次卖价 ≤ 中位 × 折扣线。 */
+    public static String cheap() {
+        List<Rec> all = all();
+        if (all.isEmpty()) {
+            return "还没有报价记录。";
+        }
+        int pct = Math.max(30, Math.min(99, InfoTools.config().priceDiscountPercent));
+        Map<String, List<Rec>> byItem = new LinkedHashMap<>();
+        for (Rec r : all) {
+            if ("卖".equals(r.dir)) {
+                byItem.computeIfAbsent(r.item(), k -> new ArrayList<>()).add(r);
+            }
+        }
+        List<String> lines = new ArrayList<>();
+        List<Double> offs = new ArrayList<>();
+        for (Map.Entry<String, List<Rec>> e : byItem.entrySet()) {
+            List<Rec> list = e.getValue();
+            if (list.size() < 4) {
+                continue;
+            }
+            list.sort(Comparator.comparingLong(Rec::time));
+            double med = median(list.stream().map(Rec::perPiece).toList());
+            Rec latest = list.get(list.size() - 1);
+            if (med <= 0 || latest.perPiece() > med * pct / 100.0) {
+                continue;
+            }
+            int off = (int) Math.round((1 - latest.perPiece() / med) * 100);
+            lines.add(Names.of(e.getKey()) + " 现在 " + fmt(latest.perPiece()) + "/个，中位 "
+                    + fmt(med) + "（低 " + off + "%）" + ago(latest.time()));
+            offs.add((double) off);
+        }
+        if (lines.isEmpty()) {
+            return "现在没有低于 " + pct + "% 的卖价（共 " + all.size() + " 条行情）。等有人喊再说。";
+        }
+        StringBuilder sb = new StringBuilder("当前便宜货（便宜线 " + pct + "%）：");
+        for (int i = 0; i < Math.min(6, lines.size()); i++) {
+            sb.append('\n').append(lines.get(i));
+        }
+        if (lines.size() > 6) {
+            sb.append("\n…还有 ").append(lines.size() - 6).append(" 种");
         }
         return sb.toString();
     }
@@ -298,6 +383,14 @@ public final class Market {
 
     private static double max(List<Double> v) {
         return v.stream().mapToDouble(Double::doubleValue).max().orElse(0);
+    }
+
+    private static String pad(String s, int width) {
+        StringBuilder sb = new StringBuilder(s);
+        while (sb.length() < width) {
+            sb.append(' ');
+        }
+        return sb.toString();
     }
 
     private static String ago(long time) {

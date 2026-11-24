@@ -102,6 +102,10 @@ public final class InfoCommands {
                                     reply(ctx, Market.overview());
                                     return 1;
                                 }))
+                                .then(ClientCommands.literal("cheap").executes(ctx -> {
+                                    reply(ctx, Market.cheap());
+                                    return 1;
+                                }))
                                 .then(ClientCommands.literal("clear").executes(ctx -> {
                                     Market.clear();
                                     reply(ctx, "本号行情已清空（其他号的记录还在）。");
@@ -148,6 +152,41 @@ public final class InfoCommands {
                                             reply(ctx, Market.stats(StringArgumentType.getString(ctx, "物品")));
                                             return 1;
                                         })))
+                        .then(ClientCommands.literal("shop")
+                                .executes(ctx -> {
+                                    reply(ctx, ShopAd.recent());
+                                    return 1;
+                                })
+                                .then(ClientCommands.literal("list").executes(ctx -> {
+                                    reply(ctx, ShopAd.recent());
+                                    return 1;
+                                }))
+                                .then(ClientCommands.literal("words").executes(ctx -> {
+                                    reply(ctx, ShopAd.words());
+                                    return 1;
+                                }))
+                                .then(ClientCommands.literal("clear").executes(ctx -> {
+                                    ShopAd.clear();
+                                    reply(ctx, "本号商店广告已清空（其他号的记录还在）。");
+                                    return 1;
+                                }))
+                                .then(ClientCommands.literal("add")
+                                        .then(ClientCommands.argument("词", StringArgumentType.word())
+                                                .executes(ctx -> {
+                                                    reply(ctx, ShopAd.addKeyword(StringArgumentType.getString(ctx, "词")));
+                                                    return 1;
+                                                })))
+                                .then(ClientCommands.literal("del")
+                                        .then(ClientCommands.argument("词", StringArgumentType.word())
+                                                .executes(ctx -> {
+                                                    reply(ctx, ShopAd.removeKeyword(StringArgumentType.getString(ctx, "词")));
+                                                    return 1;
+                                                })))
+                                .then(ClientCommands.argument("搜索", StringArgumentType.greedyString())
+                                        .executes(ctx -> {
+                                            reply(ctx, ShopAd.search(StringArgumentType.getString(ctx, "搜索")));
+                                            return 1;
+                                        })))
                         .then(ClientCommands.literal("reload").executes(ctx -> {
                             InfoTools.reloadConfig();
                             reply(ctx, "配置已重读（信息工具配置.txt）。");
@@ -178,7 +217,8 @@ public final class InfoCommands {
         sb.append("掉落物：").append(DropTracker.line(mc)).append('\n');
         sb.append(DeathTracker.summary(mc)).append('\n');
         sb.append("关键词告警：").append(KeywordAlert.line()).append('\n');
-        sb.append("行情：").append(Market.line());
+        sb.append("行情：").append(Market.line()).append('\n');
+        sb.append("商店广告：").append(ShopAd.line());
         reply(ctx, sb.toString());
         return 1;
     }
@@ -200,7 +240,13 @@ public final class InfoCommands {
                 "/info price 钻石       某物品的卖价/收价、便宜线",
                 "/info price test 话    试一句报价，看能不能识别",
                 "/info price alert on|off|75   便宜货提醒开关 / 阈值",
+                "/info price cheap      现在有哪些便宜货",
                 "/info price clear      清空本号行情",
+                "/info shop            最近的商店广告",
+                "/info shop 钻石        搜索广告内容（也能搜发广告的人）",
+                "/info shop add 词      加一个广告触发词",
+                "/info shop del 词      删触发词；/info shop words 看全部",
+                "/info shop clear       清空本号广告",
                 "/info reload          重读 信息工具配置.txt");
     }
 
