@@ -3,6 +3,8 @@ package com.doubao.infotools;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
+import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
+import net.minecraft.resources.Identifier;
 import net.minecraft.client.Minecraft;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +15,7 @@ import org.slf4j.LoggerFactory;
  */
 public class InfoTools implements ClientModInitializer {
     public static final String MOD_ID = "infotools";
-    public static final String MOD_VERSION = "1.2.0";
+    public static final String MOD_VERSION = "1.3.0";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
     private static InfoConfig config;
@@ -42,6 +44,11 @@ public class InfoTools implements ClientModInitializer {
         AssetLedger.load();
         DeathTracker.load();
         InfoCommands.register();
+        InfoKeys.register();
+        Hud.init();
+        // 左上角悬浮信息板：不用敲命令
+        HudElementRegistry.addLast(Identifier.fromNamespaceAndPath(MOD_ID, "hud"),
+                (graphics, delta) -> Hud.render(graphics));
 
         // 聊天与系统消息都看一眼，服务器把聊天当系统消息发也能命中
         ClientReceiveMessageEvents.GAME.register((message, overlay) -> {
@@ -89,6 +96,8 @@ public class InfoTools implements ClientModInitializer {
             DropTracker.tick(mc);
             KeywordAlert.tick(mc);
             InfoStatusWriter.tick(mc);
+            InfoKeys.tick();
+            Hud.tick(mc);
         } catch (Throwable t) {
             LOGGER.warn("tick 出错（已忽略，不影响游戏）", t);
         }

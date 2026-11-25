@@ -193,8 +193,20 @@ public final class ShopAd {
         }
     }
 
+    private static long countAt = 0;
+    private static int countCache = -1;
+
+    public static int count() {
+        long now = System.currentTimeMillis();
+        if (countCache < 0 || now - countAt > 10_000) {
+            countAt = now;
+            countCache = all().size();
+        }
+        return countCache;
+    }
+
     public static String line() {
-        return all().size() + " 条（触发词 " + InfoTools.config().shopKeywords.size() + " 个）";
+        return count() + " 条（触发词 " + InfoTools.config().shopKeywords.size() + " 个）";
     }
 
     private static List<Ad> sorted() {

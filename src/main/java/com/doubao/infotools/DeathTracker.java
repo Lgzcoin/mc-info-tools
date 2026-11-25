@@ -139,6 +139,25 @@ public final class DeathTracker {
         return sb.toString();
     }
 
+    /** HUD 用：离死亡点多远、往哪走。 */
+    public static String shortLine(Minecraft mc) {
+        if (lastTime.isEmpty()) {
+            return "无记录";
+        }
+        try {
+            LocalPlayer p = mc.player;
+            if (p == null) {
+                return lastX + "," + lastY + "," + lastZ;
+            }
+            double dx = lastX + 0.5 - p.getX();
+            double dz = lastZ + 0.5 - p.getZ();
+            int dist = (int) Math.round(Math.sqrt(dx * dx + dz * dz));
+            return dist + " 格 " + dir(dx, dz);
+        } catch (Throwable t) {
+            return "记录异常";
+        }
+    }
+
     public static String line() {
         if (lastTime.isEmpty()) {
             return "无";

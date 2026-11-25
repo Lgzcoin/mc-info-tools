@@ -30,7 +30,8 @@ public final class Market {
     private Market() {
     }
 
-    private record Rec(long time, String dir, String item, double perPiece, double raw, String unit, String text) {
+    private record Rec(long time, String dir, String item, double perPiece, double raw, String unit,
+                      String server, String text) {
     }
 
     public static boolean enabled() {
@@ -97,7 +98,7 @@ public final class Market {
         try {
             String text = q.raw().replace("|", "/").replace("\n", " ").replace("\r", " ");
             String line = System.currentTimeMillis() + "|" + q.direction() + "|" + q.itemId() + "|"
-                    + q.perPiece() + "|" + q.rawPrice() + "|" + q.unit() + "|" + text
+                    + q.perPiece() + "|" + q.rawPrice() + "|" + q.unit() + "|" + ServerInfo.key() + "|" + text
                     + "\n";
             Files.writeString(file(), line, StandardCharsets.UTF_8,
                     StandardOpenOption.CREATE, StandardOpenOption.APPEND);
@@ -139,9 +140,10 @@ public final class Market {
                     if (!Files.isRegularFile(f)) {
                         continue;
                     }
+                    String want = ServerInfo.key();
                     for (String raw : Files.readAllLines(f, StandardCharsets.UTF_8)) {
                         Rec r = parseLine(raw);
-                        if (r != null) {
+                        if (r != null && (r.server().isEmpty() || r.server().equals(want))) {
                             out.add(r);
                         }
                     }
@@ -157,13 +159,18 @@ public final class Market {
         if (line.isEmpty() || line.startsWith("#")) {
             return null;
         }
-        String[] p = line.split("\\|", 7);
-        if (p.length < 6) {
+        String[] p = line.split("\\|", 8);
+        if (p.length < 7) {
             return null;
         }
         try {
+            if (p.length >= 8) {
+                return new Rec(Long.parseLong(p[0]), p[1], p[2], Double.parseDouble(p[3]),
+                        Double.parseDouble(p[4]), p[5], p[6], p[7]);
+            }
+            // 旧格式：没有 server 字段，归为通用
             return new Rec(Long.parseLong(p[0]), p[1], p[2], Double.parseDouble(p[3]),
-                    Double.parseDouble(p[4]), p[5], p.length > 6 ? p[6] : "");
+                    Double.parseDouble(p[4]), p[5], "", p[6]);
         } catch (Throwable t) {
             return null;
         }
@@ -180,8 +187,8 @@ public final class Market {
         }
         List<Rec> last = new ArrayList<>(all);
         last.sort(Comparator.comparingLong(Rec::time).reversed());
-        StringBuilder sb = new StringBuilder("行情 ").append(all.size()).append(" 条 / ")
-                .append(byItem.size()).append(" 种，最近 ").append(ago(last.get(0).time()));
+        StringBuilder sb = new StringBuilder(ServerInfo.name()).append(" 行情 ").append(all.size())
+                .append(" 条 / ").append(byItem.size()).append(" 种，最近 ").append(ago(last.get(0).time()));
         List<Map.Entry<String, List<Rec>>> top = new ArrayList<>(byItem.entrySet());
         top.sort(Comparator.<Map.Entry<String, List<Rec>>>comparingInt(e -> -e.getValue().size()));
         for (int i = 0; i < Math.min(7, top.size()); i++) {
@@ -286,11 +293,10 @@ public final class Market {
         return sb.toString();
     }
 
-    /** 现在就能捡的便宜货：每个物品最近一次卖价 ≤ 中位 × 折扣线。 */
-    public static String cheap() {
+    private static List<String> cheapEntries() {
         List<Rec> all = all();
         if (all.isEmpty()) {
-            return "还没有报价记录。";
+            return List.of();
         }
         int pct = Math.max(30, Math.min(99, InfoTools.config().priceDiscountPercent));
         Map<String, List<Rec>> byItem = new LinkedHashMap<>();
@@ -300,7 +306,6 @@ public final class Market {
             }
         }
         List<String> lines = new ArrayList<>();
-        List<Double> offs = new ArrayList<>();
         for (Map.Entry<String, List<Rec>> e : byItem.entrySet()) {
             List<Rec> list = e.getValue();
             if (list.size() < 4) {
@@ -315,8 +320,18 @@ public final class Market {
             int off = (int) Math.round((1 - latest.perPiece() / med) * 100);
             lines.add(Names.of(e.getKey()) + " 现在 " + fmt(latest.perPiece()) + "/个，中位 "
                     + fmt(med) + "（低 " + off + "%）" + ago(latest.time()));
-            offs.add((double) off);
         }
+        return lines;
+    }
+
+    /** 现在就能捡的便宜货：每个物品最近一次卖价 ≤ 中位 × 折扣线。 */
+    public static String cheap() {
+        List<Rec> all = all();
+        if (all.isEmpty()) {
+            return "还没有报价记录。";
+        }
+        int pct = Math.max(30, Math.min(99, InfoTools.config().priceDiscountPercent));
+        List<String> lines = cheapEntries();
         if (lines.isEmpty()) {
             return "现在没有低于 " + pct + "% 的卖价（共 " + all.size() + " 条行情）。等有人喊再说。";
         }
@@ -326,6 +341,48 @@ public final class Market {
         }
         if (lines.size() > 6) {
             sb.append("\n…还有 ").append(lines.size() - 6).append(" 种");
+        }
+        return sb.toString();
+    }
+
+    public static int cheapCount() {
+        return cheapEntries().size();
+    }
+
+    /** HUD 一行：最常报价的两种物品，卖/收中位。 */
+    public static String hudLine() {
+        List<Rec> all = all();
+        if (all.isEmpty()) {
+            return "暂无报价（听聊天自动记）";
+        }
+        Map<String, List<Rec>> byItem = new LinkedHashMap<>();
+        for (Rec r : all) {
+            byItem.computeIfAbsent(r.item(), k -> new ArrayList<>()).add(r);
+        }
+        List<Map.Entry<String, List<Rec>>> top = new ArrayList<>(byItem.entrySet());
+        top.sort(Comparator.<Map.Entry<String, List<Rec>>>comparingInt(e -> -e.getValue().size()));
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < Math.min(2, top.size()); i++) {
+            if (i > 0) {
+                sb.append(" ｜ ");
+            }
+            String id = top.get(i).getKey();
+            List<Double> sell = new ArrayList<>();
+            List<Double> buy = new ArrayList<>();
+            for (Rec r : top.get(i).getValue()) {
+                if ("卖".equals(r.dir)) {
+                    sell.add(r.perPiece());
+                } else {
+                    buy.add(r.perPiece());
+                }
+            }
+            sb.append(Names.of(id)).append(' ');
+            if (!sell.isEmpty()) {
+                sb.append("卖").append(fmt(median(sell)));
+            }
+            if (!buy.isEmpty()) {
+                sb.append("/收").append(fmt(median(buy)));
+            }
         }
         return sb.toString();
     }

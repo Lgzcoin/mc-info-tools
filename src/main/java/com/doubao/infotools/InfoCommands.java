@@ -187,6 +187,30 @@ public final class InfoCommands {
                                             reply(ctx, ShopAd.search(StringArgumentType.getString(ctx, "搜索")));
                                             return 1;
                                         })))
+                        .then(ClientCommands.literal("hud")
+                                .executes(ctx -> {
+                                    reply(ctx, "悬浮窗：" + (Hud.visible() ? "开" : "关") + "（游戏里按 I 开关）");
+                                    return 1;
+                                })
+                                .then(ClientCommands.literal("on").executes(ctx -> {
+                                    Hud.setVisible(true);
+                                    reply(ctx, "悬浮窗已显示（按 I 可隐藏）。");
+                                    return 1;
+                                }))
+                                .then(ClientCommands.literal("off").executes(ctx -> {
+                                    Hud.setVisible(false);
+                                    reply(ctx, "悬浮窗已隐藏（按 I 可再打开）。");
+                                    return 1;
+                                })))
+                        .then(ClientCommands.literal("server").executes(ctx -> {
+                            int ping = ServerInfo.ping();
+                            String names = ServerInfo.onlineNames(12);
+                            reply(ctx, "服务器：" + ServerInfo.name()
+                            + "\n在线：" + ServerInfo.online() + " 人"
+                            + (ping >= 0 ? "\n你的延迟：" + ping + "ms" : "")
+                            + (names.isEmpty() ? "" : "\n玩家：" + names));
+                            return 1;
+                        }))
                         .then(ClientCommands.literal("reload").executes(ctx -> {
                             InfoTools.reloadConfig();
                             reply(ctx, "配置已重读（信息工具配置.txt）。");
@@ -247,6 +271,8 @@ public final class InfoCommands {
                 "/info shop add 词      加一个广告触发词",
                 "/info shop del 词      删触发词；/info shop words 看全部",
                 "/info shop clear       清空本号广告",
+                "/info server           服务器名、在线人数、你的延迟",
+                "/info hud on|off       左上角悬浮板（游戏里按 I）",
                 "/info reload          重读 信息工具配置.txt");
     }
 
