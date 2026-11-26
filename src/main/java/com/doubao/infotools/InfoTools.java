@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
  */
 public class InfoTools implements ClientModInitializer {
     public static final String MOD_ID = "infotools";
-    public static final String MOD_VERSION = "1.4.0";
+    public static final String MOD_VERSION = "1.5.0";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
     private static InfoConfig config;
@@ -44,12 +44,19 @@ public class InfoTools implements ClientModInitializer {
         AssetLedger.load();
         DeathTracker.load();
         InfoCommands.register();
-        QuickCard.register();
         InfoKeys.register();
+        LookCard.init();
         Hud.init();
         // 左上角悬浮信息板：不用敲命令
         HudElementRegistry.addLast(Identifier.fromNamespaceAndPath(MOD_ID, "hud"),
                 (graphics, delta) -> Hud.render(graphics));
+        // 按键速查卡（V）：独立于左上角信息板，按 I 隐藏信息板也仍然显示
+        HudElementRegistry.addLast(Identifier.fromNamespaceAndPath(MOD_ID, "look"),
+                (graphics, delta) -> {
+                    if (Minecraft.getInstance().gui.screen() == null) {
+                        LookCard.render(graphics);
+                    }
+                });
 
         // 聊天与系统消息都看一眼，服务器把聊天当系统消息发也能命中
         ClientReceiveMessageEvents.GAME.register((message, overlay) -> {
@@ -98,7 +105,7 @@ public class InfoTools implements ClientModInitializer {
             KeywordAlert.tick(mc);
             SignShop.tick(mc);
             InfoStatusWriter.tick(mc);
-            InfoKeys.tick();
+            InfoKeys.tick(mc);
             Hud.tick(mc);
         } catch (Throwable t) {
             LOGGER.warn("tick 出错（已忽略，不影响游戏）", t);
