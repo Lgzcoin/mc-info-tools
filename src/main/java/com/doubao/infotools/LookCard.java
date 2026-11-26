@@ -151,6 +151,9 @@ public final class LookCard {
     private static List<String> buildLines(Minecraft mc, ItemStack stack) {
         List<String> out = new ArrayList<>();
         String id = idOf(stack);
+        if (id == null) {
+            id = "unknown";
+        }
         String name = Names.of(id);
         out.add("§e" + name + "  §7" + id);
         out.add("§7数量 " + stack.getCount() + "/" + stack.getMaxStackSize());
