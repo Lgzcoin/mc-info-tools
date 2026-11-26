@@ -234,7 +234,13 @@ public final class SignShop {
     /** 第一行若是店名/广告词，先清掉，避免“钻石商店”被当成钻石。 */
     private static List<String> sanitizeFirst(List<String> lines) {
         List<String> out = new ArrayList<>(lines);
-        if (!out.isEmpty() && !looksTrading(out.get(0))) {
+        if (out.isEmpty() || looksTrading(out.get(0))) {
+            return out;
+        }
+        String first = out.get(0);
+        boolean looksName = first != null && first.toLowerCase().matches(".*(店|shop|摊位|商城|market).*");
+        boolean pureItem = resolveItem(first) != null;
+        if (!pureItem || looksName) {
             out.set(0, "");
         }
         return out;
@@ -264,7 +270,13 @@ public final class SignShop {
     private static String resolveItem(String line) {
         String id = PriceParser.resolveItem(line);
         if (id != null) {
-            return id;
+            try {
+                Identifier loc = Identifier.parse(id);
+                if (BuiltInRegistries.ITEM.containsKey(loc)) {
+                    return loc.toString();
+                }
+            } catch (Throwable ignored) {
+            }
         }
         String low = line == null ? "" : line.toLowerCase();
         if (low.startsWith("minecraft:") && low.length() > 10) {
