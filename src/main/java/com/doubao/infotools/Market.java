@@ -416,6 +416,55 @@ public final class Market {
         return cachedLine;
     }
 
+    public record ItemPrice(double sellMed, double buyMed, double sellMin, double buyMax, int sellN, int buyN) {
+        public boolean any() {
+            return sellN > 0 || buyN > 0;
+        }
+
+        public double reference() {
+            return sellMed > 0 ? sellMed : buyMed;
+        }
+    }
+
+    private static Map<String, ItemPrice> priceIndex = null;
+    private static long priceIndexAt = 0L;
+
+    /** 每个物品一次算好，速查卡/背包估值共用；5 秒缓存，避免反复读盘。 */
+    public static ItemPrice priceOf(String itemId) {
+        long now = System.currentTimeMillis();
+        if (priceIndex == null || now - priceIndexAt > 5000L) {
+            Map<String, List<Rec>> byItem = new HashMap<>();
+            for (Rec r : all()) {
+                byItem.computeIfAbsent(r.item(), k -> new ArrayList<>()).add(r);
+            }
+            Map<String, ItemPrice> out = new HashMap<>();
+            for (Map.Entry<String, List<Rec>> e : byItem.entrySet()) {
+                List<Double> sell = new ArrayList<>();
+                List<Double> buy = new ArrayList<>();
+                for (Rec r : e.getValue()) {
+                    if ("卖".equals(r.dir())) {
+                        sell.add(r.perPiece());
+                    } else {
+                        buy.add(r.perPiece());
+                    }
+                }
+                out.put(e.getKey(), new ItemPrice(
+                        sell.isEmpty() ? 0 : median(sell),
+                        buy.isEmpty() ? 0 : median(buy),
+                        sell.isEmpty() ? 0 : min(sell),
+                        buy.isEmpty() ? 0 : max(buy),
+                        sell.size(), buy.size()));
+            }
+            priceIndex = out;
+            priceIndexAt = now;
+        }
+        return priceIndex.get(itemId);
+    }
+
+    public static String resolveItemName(String text) {
+        return resolve(text);
+    }
+
     private static String resolve(String text) {
         if (text == null || text.isBlank()) {
             return null;

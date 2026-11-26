@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
  */
 public class InfoTools implements ClientModInitializer {
     public static final String MOD_ID = "infotools";
-    public static final String MOD_VERSION = "1.3.0";
+    public static final String MOD_VERSION = "1.4.0";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
     private static InfoConfig config;
@@ -44,6 +44,7 @@ public class InfoTools implements ClientModInitializer {
         AssetLedger.load();
         DeathTracker.load();
         InfoCommands.register();
+        QuickCard.register();
         InfoKeys.register();
         Hud.init();
         // 左上角悬浮信息板：不用敲命令
@@ -95,6 +96,7 @@ public class InfoTools implements ClientModInitializer {
             DeathTracker.tick(mc);
             DropTracker.tick(mc);
             KeywordAlert.tick(mc);
+            SignShop.tick(mc);
             InfoStatusWriter.tick(mc);
             InfoKeys.tick();
             Hud.tick(mc);

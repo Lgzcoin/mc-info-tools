@@ -63,6 +63,14 @@ public final class Hud {
                 + DeathTracker.shortLine(Minecraft.getInstance()));
         out.add("行情 " + Market.hudLine());
         out.add("便宜货 " + Market.cheapCount() + " 个   商店广告 " + ShopAd.count() + " 条");
+        String worth = Worth.hudLine(Minecraft.getInstance());
+        if (worth != null) {
+            out.add(worth);
+        }
+        String shop = SignShop.hudLine(Minecraft.getInstance());
+        if (shop != null) {
+            out.add(shop);
+        }
         lines = out;
     }
 

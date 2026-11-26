@@ -216,6 +216,48 @@ public final class InfoCommands {
                             reply(ctx, "配置已重读（信息工具配置.txt）。");
                             return 1;
                         }))
+                        .then(ClientCommands.literal("sign")
+                                .executes(ctx -> {
+                                    Minecraft mc = Minecraft.getInstance();
+                                    if (mc.player == null) {
+                                        reply(ctx, "还没进世界。");
+                                        return 1;
+                                    }
+                                    String held = QuickCard.idOf(mc.player.getMainHandItem());
+                                    reply(ctx, held == null ? SignShop.list() : SignShop.search(held));
+                                    return 1;
+                                })
+                                .then(ClientCommands.literal("list").executes(ctx -> {
+                                    reply(ctx, SignShop.list());
+                                    return 1;
+                                }))
+                                .then(ClientCommands.literal("near").executes(ctx -> {
+                                    reply(ctx, SignShop.near());
+                                    return 1;
+                                }))
+                                .then(ClientCommands.literal("scan").executes(ctx -> {
+                                    Minecraft mc = Minecraft.getInstance();
+                                    if (mc.player == null) {
+                                        reply(ctx, "还没进世界。");
+                                        return 1;
+                                    }
+                                    SignShop.forceScan(mc);
+                                    reply(ctx, "已扫一遍周围区块，当前共 " + SignShop.count() + " 家店。");
+                                    return 1;
+                                }))
+                                .then(ClientCommands.literal("clear").executes(ctx -> {
+                                    reply(ctx, SignShop.clear());
+                                    return 1;
+                                }))
+                                .then(ClientCommands.argument("物品", StringArgumentType.greedyString())
+                                        .executes(ctx -> {
+                                            reply(ctx, SignShop.search(StringArgumentType.getString(ctx, "物品")));
+                                            return 1;
+                                        })))
+                        .then(ClientCommands.literal("worth").executes(ctx -> {
+                            reply(ctx, Worth.summary(Minecraft.getInstance()));
+                            return 1;
+                        }))
                         .then(ClientCommands.literal("help").executes(ctx -> {
                             reply(ctx, helpText());
                             return 1;
@@ -242,7 +284,9 @@ public final class InfoCommands {
         sb.append(DeathTracker.summary(mc)).append('\n');
         sb.append("关键词告警：").append(KeywordAlert.line()).append('\n');
         sb.append("行情：").append(Market.line()).append('\n');
-        sb.append("商店广告：").append(ShopAd.line());
+        sb.append("商店广告：").append(ShopAd.line()).append('\n');
+        sb.append("商店地图：").append(SignShop.count()).append(" 家店").append('\n');
+        sb.append(Worth.summary(mc));
         reply(ctx, sb.toString());
         return 1;
     }
@@ -271,6 +315,12 @@ public final class InfoCommands {
                 "/info shop add 词      加一个广告触发词",
                 "/info shop del 词      删触发词；/info shop words 看全部",
                 "/info shop clear       清空本号广告",
+                "/info sign            手持物品的附近商店比价；空手=总览",
+                "/info sign 钻石        查某物品的所有已记商店",
+                "/info sign near       64 格内的店",
+                "/info sign scan       立刻扫一遍周围区块",
+                "/info sign clear      清空本号商店地图",
+                "/info worth           背包总市值 + 最值钱的 5 样",
                 "/info server           服务器名、在线人数、你的延迟",
                 "/info hud on|off       左上角悬浮板（游戏里按 I）",
                 "/info reload          重读 信息工具配置.txt");

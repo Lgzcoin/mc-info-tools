@@ -17,6 +17,9 @@ public final class InfoConfig {
     public boolean alertEnabled = true;
     public boolean priceEnabled = true;
     public boolean hudEnabled = true;
+    public boolean quickCardEnabled = true;
+    public boolean shopMapEnabled = true;
+    public boolean worthHud = true;
     public int priceDiscountPercent = 80;
     public final List<String> shopKeywords = new ArrayList<>(Arrays.asList(
             "商店", "店铺", "摊位", "促销", "特价", "甩卖", "上新", "批发"));
@@ -59,6 +62,9 @@ public final class InfoConfig {
                     case "关键词告警" -> c.alertEnabled = bool(val, true);
                     case "比价" -> c.priceEnabled = bool(val, true);
                     case "悬浮窗" -> c.hudEnabled = bool(val, true);
+                    case "速查卡" -> c.quickCardEnabled = bool(val, true);
+                    case "商店地图" -> c.shopMapEnabled = bool(val, true);
+                    case "背包市值" -> c.worthHud = bool(val, true);
                     case "比价便宜线" -> c.priceDiscountPercent = clamp(parseInt(val, 80), 30, 99);
                     case "商店关键词" -> {
                         c.shopKeywords.clear();
@@ -97,6 +103,9 @@ public final class InfoConfig {
             sb.append("# 自动播报：开 / 关（死亡、掉落将消失、关键词命中时自动提示）\n");
             sb.append("# 关键词告警：开 / 关（聊天命中关键词时提示并记录）\n");
             sb.append("# 悬浮窗：开 / 关（屏幕左上角信息板，游戏里按 I 也能开关）\n");
+            sb.append("# 速查卡：开 / 关（鼠标悬停物品时补行情和附近最低价）\n");
+            sb.append("# 商店地图：开 / 关（走近告示牌商店自动记坐标和价格）\n");
+            sb.append("# 背包市值：开 / 关（悬浮板显示背包总估值）\n");
             sb.append("# 比价：开 / 关（聊天报价自动记录，便宜货提醒）\n");
             sb.append("# 比价便宜线：卖价低于历史均价的百分之几就提醒（30~99）\n");
             sb.append("# 商店关键词：聊天里出现这些词就把整条记成商店广告（逗号分隔）\n");
@@ -106,6 +115,9 @@ public final class InfoConfig {
             sb.append("自动播报 = ").append(autoBroadcast ? "开" : "关").append('\n');
             sb.append("关键词告警 = ").append(alertEnabled ? "开" : "关").append('\n');
             sb.append("悬浮窗 = ").append(hudEnabled ? "开" : "关").append('\n');
+            sb.append("速查卡 = ").append(quickCardEnabled ? "开" : "关").append('\n');
+            sb.append("商店地图 = ").append(shopMapEnabled ? "开" : "关").append('\n');
+            sb.append("背包市值 = ").append(worthHud ? "开" : "关").append('\n');
             sb.append("比价 = ").append(priceEnabled ? "开" : "关").append('\n');
             sb.append("比价便宜线 = ").append(priceDiscountPercent).append('\n');
             sb.append("商店关键词 = ").append(String.join(",", shopKeywords)).append('\n');

@@ -47,6 +47,9 @@ public final class InfoStatusWriter {
         sb.append("告警=").append(KeywordAlert.line()).append('\n');
         sb.append("行情=").append(Market.line()).append('\n');
         sb.append("商店=").append(ShopAd.line()).append('\n');
+        sb.append("商店地图=").append(SignShop.count()).append(" 家\n");
+        String worth = Worth.hudLine(mc);
+        sb.append("背包=").append(worth == null ? "关" : worth).append('\n');
         return sb.toString();
     }
 }
