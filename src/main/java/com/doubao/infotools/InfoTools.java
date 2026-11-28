@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
  */
 public class InfoTools implements ClientModInitializer {
     public static final String MOD_ID = "infotools";
-    public static final String MOD_VERSION = "1.5.0";
+    public static final String MOD_VERSION = "1.6.0";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
     private static InfoConfig config;
@@ -46,6 +46,7 @@ public class InfoTools implements ClientModInitializer {
         InfoCommands.register();
         InfoKeys.register();
         LookCard.init();
+        ChestIndex.init();
         Hud.init();
         // 左上角悬浮信息板：不用敲命令
         HudElementRegistry.addLast(Identifier.fromNamespaceAndPath(MOD_ID, "hud"),
@@ -77,6 +78,8 @@ public class InfoTools implements ClientModInitializer {
         KeywordAlert.onMessage(text);
         Market.onMessage(text);
         ShopAd.onMessage(text, sender);
+        ShopWatch.onMessage(text, sender);
+        QuoteActions.onMessage(text, sender);
     }
 
     private static String senderName(com.mojang.authlib.GameProfile profile) {
@@ -104,6 +107,12 @@ public class InfoTools implements ClientModInitializer {
             DropTracker.tick(mc);
             KeywordAlert.tick(mc);
             SignShop.tick(mc);
+            if (InfoTools.config().historyEnabled) {
+                PriceHistory.tick(mc);
+            }
+            if (InfoTools.config().incomeEnabled) {
+                IncomeStats.tick(mc);
+            }
             InfoStatusWriter.tick(mc);
             InfoKeys.tick(mc);
             Hud.tick(mc);

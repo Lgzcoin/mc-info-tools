@@ -50,6 +50,10 @@ public final class InfoStatusWriter {
         sb.append("商店地图=").append(SignShop.count()).append(" 家\n");
         String worth = Worth.hudLine(mc);
         sb.append("背包=").append(worth == null ? "关" : worth).append('\n');
+        sb.append("收购榜=").append(BuyBoard.hudLine()).append('\n');
+        sb.append("补货缺口=").append(Stock.gapCount(mc)).append('\n');
+        sb.append("今日收益=").append(IncomeStats.dayLine(mc)).append('\n');
+        sb.append("开箱索引=").append(ChestIndex.count()).append(" 条\n");
         return sb.toString();
     }
 }

@@ -20,11 +20,18 @@ public final class InfoConfig {
     public boolean quickCardEnabled = true;
     public boolean shopMapEnabled = true;
     public boolean worthHud = true;
+    public boolean quoteCopyEnabled = true;
+    public boolean shopWatchEnabled = true;
+    public boolean chestIndexEnabled = true;
+    public boolean incomeEnabled = true;
+    public boolean historyEnabled = true;
     public int priceDiscountPercent = 80;
+    public int arbitragePercent = 10;
     public final List<String> shopKeywords = new ArrayList<>(Arrays.asList(
             "商店", "店铺", "摊位", "促销", "特价", "甩卖", "上新", "批发"));
     public final List<String> keywords = new ArrayList<>(Arrays.asList(
             "管理员", "清人", "重启", "封号", "封禁", "TPA", "交易", "收人"));
+    public final List<String> watchedShops = new ArrayList<>();
     public int assetSnapSeconds = 60;
     public int dropWarnSeconds = 60;
 
@@ -65,7 +72,13 @@ public final class InfoConfig {
                     case "速查卡" -> c.quickCardEnabled = bool(val, true);
                     case "商店地图" -> c.shopMapEnabled = bool(val, true);
                     case "背包市值" -> c.worthHud = bool(val, true);
+                    case "报价快捷" -> c.quoteCopyEnabled = bool(val, true);
+                    case "店主订阅" -> c.shopWatchEnabled = bool(val, true);
+                    case "开箱索引" -> c.chestIndexEnabled = bool(val, true);
+                    case "收益统计" -> c.incomeEnabled = bool(val, true);
+                    case "行情日线" -> c.historyEnabled = bool(val, true);
                     case "比价便宜线" -> c.priceDiscountPercent = clamp(parseInt(val, 80), 30, 99);
+                    case "套利线" -> c.arbitragePercent = clamp(parseInt(val, 10), 1, 99);
                     case "商店关键词" -> {
                         c.shopKeywords.clear();
                         for (String s2 : val.split("[,，、]")) {
@@ -81,6 +94,15 @@ public final class InfoConfig {
                             String k = s.trim();
                             if (!k.isEmpty()) {
                                 c.keywords.add(k);
+                            }
+                        }
+                    }
+                    case "关注店主" -> {
+                        c.watchedShops.clear();
+                        for (String s : val.split("[,，、]")) {
+                            String k = s.trim();
+                            if (!k.isEmpty()) {
+                                c.watchedShops.add(k);
                             }
                         }
                     }
@@ -103,10 +125,16 @@ public final class InfoConfig {
             sb.append("# 自动播报：开 / 关（死亡、掉落将消失、关键词命中时自动提示）\n");
             sb.append("# 关键词告警：开 / 关（聊天命中关键词时提示并记录）\n");
             sb.append("# 悬浮窗：开 / 关（屏幕左上角信息板，游戏里按 I 也能开关）\n");
-            sb.append("# 速查卡：开 / 关（鼠标悬停物品时补行情和附近最低价）\n");
+            sb.append("# 速查卡：开 / 关（按 V 对准物品弹出 ID/耐久/行情/附近价）\n");
             sb.append("# 商店地图：开 / 关（走近告示牌商店自动记坐标和价格）\n");
             sb.append("# 背包市值：开 / 关（悬浮板显示背包总估值）\n");
             sb.append("# 比价：开 / 关（聊天报价自动记录，便宜货提醒）\n");
+            sb.append("# 报价快捷：开 / 关（报价后补一行可点击复制的 /msg 回复）\n");
+            sb.append("# 店主订阅：开 / 关（关注店主说话/上新/降价时提醒）\n");
+            sb.append("# 开箱索引：开 / 关（打开箱子时记内容，/info chest 查）\n");
+            sb.append("# 收益统计：开 / 关（每分钟记背包净增和经验）\n");
+            sb.append("# 行情日线：开 / 关（每天第一次进游戏快照行情）\n");
+            sb.append("# 套利线：买卖价差达到百分之几才提示（1~99）\n");
             sb.append("# 比价便宜线：卖价低于历史均价的百分之几就提醒（30~99）\n");
             sb.append("# 商店关键词：聊天里出现这些词就把整条记成商店广告（逗号分隔）\n");
             sb.append("# 关键词：用逗号分隔，聊天里出现就告警\n");
@@ -118,7 +146,14 @@ public final class InfoConfig {
             sb.append("速查卡 = ").append(quickCardEnabled ? "开" : "关").append('\n');
             sb.append("商店地图 = ").append(shopMapEnabled ? "开" : "关").append('\n');
             sb.append("背包市值 = ").append(worthHud ? "开" : "关").append('\n');
+            sb.append("报价快捷 = ").append(quoteCopyEnabled ? "开" : "关").append('\n');
+            sb.append("店主订阅 = ").append(shopWatchEnabled ? "开" : "关").append('\n');
+            sb.append("开箱索引 = ").append(chestIndexEnabled ? "开" : "关").append('\n');
+            sb.append("收益统计 = ").append(incomeEnabled ? "开" : "关").append('\n');
+            sb.append("行情日线 = ").append(historyEnabled ? "开" : "关").append('\n');
             sb.append("比价 = ").append(priceEnabled ? "开" : "关").append('\n');
+            sb.append("套利线 = ").append(arbitragePercent).append('\n');
+            sb.append("关注店主 = ").append(String.join(",", watchedShops)).append('\n');
             sb.append("比价便宜线 = ").append(priceDiscountPercent).append('\n');
             sb.append("商店关键词 = ").append(String.join(",", shopKeywords)).append('\n');
             sb.append("关键词 = ").append(String.join(",", keywords)).append('\n');

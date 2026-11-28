@@ -113,6 +113,46 @@ public final class Worth {
         return "背包 " + used + " 格 市值 " + money(value);
     }
 
+    /** 背包物品计数（不含装备栏），给补货清单/收益统计用。 */
+    public static Map<String, Integer> inventoryCounts(Minecraft mc) {
+        return new LinkedHashMap<>(counts(mc));
+    }
+
+    /** 按行情卖中位估背包总价值。 */
+    public static double marketValue(Minecraft mc) {
+        double sum = 0;
+        for (Map.Entry<String, Integer> e : counts(mc).entrySet()) {
+            Market.ItemPrice p = Market.priceOf(e.getKey());
+            if (p != null && p.any()) {
+                sum += p.reference() * e.getValue();
+            }
+        }
+        return sum;
+    }
+
+    public static String topValueText(Minecraft mc, int limit) {
+        List<Line> lines = new ArrayList<>();
+        for (Map.Entry<String, Integer> e : counts(mc).entrySet()) {
+            Market.ItemPrice p = Market.priceOf(e.getKey());
+            double unit = p == null ? 0 : p.reference();
+            lines.add(new Line(e.getKey(), e.getValue(), unit, unit * e.getValue()));
+        }
+        lines.sort(Comparator.comparingDouble(Line::value).reversed());
+        StringBuilder sb = new StringBuilder();
+        int shown = 0;
+        for (Line l : lines) {
+            if (l.value() <= 0 || shown >= limit) {
+                continue;
+            }
+            if (shown > 0) {
+                sb.append("、");
+            }
+            sb.append(Names.of(l.id())).append('×').append(l.count());
+            shown++;
+        }
+        return sb.toString();
+    }
+
     private static Map<String, Integer> counts(Minecraft mc) {
         Map<String, Integer> out = new LinkedHashMap<>();
         if (mc.player == null) {

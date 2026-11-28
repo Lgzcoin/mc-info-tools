@@ -416,6 +416,24 @@ public final class Market {
         return cachedLine;
     }
 
+    /** 给收购榜/套利/快捷回复用的公开报价视图。 */
+    public record QuoteView(String item, String dir, double perPiece, long time, String raw) {
+    }
+
+    public static List<QuoteView> quoteViews() {
+        List<QuoteView> out = new ArrayList<>();
+        for (Rec r : all()) {
+            out.add(new QuoteView(r.item(), r.dir(), r.perPiece(), r.time(), r.text()));
+        }
+        return out;
+    }
+
+    /** 所有物品的行情快照，给日线用。 */
+    public static Map<String, ItemPrice> allPrices() {
+        priceOf("__none__");
+        return priceIndex == null ? Map.of() : new LinkedHashMap<>(priceIndex);
+    }
+
     public record ItemPrice(double sellMed, double buyMed, double sellMin, double buyMax, int sellN, int buyN) {
         public boolean any() {
             return sellN > 0 || buyN > 0;

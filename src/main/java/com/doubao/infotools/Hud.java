@@ -71,6 +71,13 @@ public final class Hud {
         if (shop != null) {
             out.add(shop);
         }
+        out.add(BuyBoard.hudLine());
+        int gap = Stock.gapCount(Minecraft.getInstance());
+        if (gap > 0) {
+            out.add("补货 缺 " + gap + " 种　" + IncomeStats.dayLine(Minecraft.getInstance()));
+        } else {
+            out.add(IncomeStats.dayLine(Minecraft.getInstance()));
+        }
         lines = out;
     }
 

@@ -1,5 +1,6 @@
 package com.doubao.infotools;
 
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
@@ -258,6 +259,152 @@ public final class InfoCommands {
                             reply(ctx, Worth.summary(Minecraft.getInstance()));
                             return 1;
                         }))
+                        .then(ClientCommands.literal("buy")
+                                .executes(ctx -> {
+                                    reply(ctx, BuyBoard.board());
+                                    return 1;
+                                })
+                                .then(ClientCommands.argument("物品", StringArgumentType.greedyString())
+                                        .executes(ctx -> {
+                                            reply(ctx, BuyBoard.item(StringArgumentType.getString(ctx, "物品")));
+                                            return 1;
+                                        })))
+                        .then(ClientCommands.literal("flip").executes(ctx -> {
+                            reply(ctx, BuyBoard.flip());
+                            return 1;
+                        }))
+                        .then(ClientCommands.literal("stock")
+                                .executes(ctx -> {
+                                    reply(ctx, Stock.list(Minecraft.getInstance()));
+                                    return 1;
+                                })
+                                .then(ClientCommands.literal("list").executes(ctx -> {
+                                    reply(ctx, Stock.list(Minecraft.getInstance()));
+                                    return 1;
+                                }))
+                                .then(ClientCommands.literal("plan").executes(ctx -> {
+                                    reply(ctx, Stock.plan(Minecraft.getInstance()));
+                                    return 1;
+                                }))
+                                .then(ClientCommands.literal("clear").executes(ctx -> {
+                                    reply(ctx, Stock.clear());
+                                    return 1;
+                                }))
+                                .then(ClientCommands.literal("set")
+                                        .then(ClientCommands.argument("物品", StringArgumentType.word())
+                                                .then(ClientCommands.argument("数量", IntegerArgumentType.integer(0, 999999))
+                                                        .executes(ctx -> {
+                                                            reply(ctx, Stock.set(StringArgumentType.getString(ctx, "物品"),
+                                                                    IntegerArgumentType.getInteger(ctx, "数量")));
+                                                            return 1;
+                                                        }))))
+                                .then(ClientCommands.literal("del")
+                                        .then(ClientCommands.argument("物品", StringArgumentType.word())
+                                                .executes(ctx -> {
+                                                    reply(ctx, Stock.set(StringArgumentType.getString(ctx, "物品"), 0));
+                                                    return 1;
+                                                }))))
+                        .then(ClientCommands.literal("chest")
+                                .executes(ctx -> {
+                                    reply(ctx, ChestIndex.list());
+                                    return 1;
+                                })
+                                .then(ClientCommands.literal("list").executes(ctx -> {
+                                    reply(ctx, ChestIndex.list());
+                                    return 1;
+                                }))
+                                .then(ClientCommands.literal("clear").executes(ctx -> {
+                                    reply(ctx, ChestIndex.clear());
+                                    return 1;
+                                }))
+                                .then(ClientCommands.argument("物品", StringArgumentType.greedyString())
+                                        .executes(ctx -> {
+                                            reply(ctx, ChestIndex.query(StringArgumentType.getString(ctx, "物品"),
+                                                    Minecraft.getInstance()));
+                                            return 1;
+                                        })))
+                        .then(ClientCommands.literal("history")
+                                .then(ClientCommands.literal("clear").executes(ctx -> {
+                                    reply(ctx, PriceHistory.clear());
+                                    return 1;
+                                }))
+                                .then(ClientCommands.argument("物品", StringArgumentType.greedyString())
+                                        .executes(ctx -> {
+                                            reply(ctx, PriceHistory.query(StringArgumentType.getString(ctx, "物品")));
+                                            return 1;
+                                        })))
+                        .then(ClientCommands.literal("loss")
+                                .executes(ctx -> {
+                                    reply(ctx, DeathLoss.summary());
+                                    return 1;
+                                })
+                                .then(ClientCommands.literal("clear").executes(ctx -> {
+                                    reply(ctx, DeathLoss.clear());
+                                    return 1;
+                                })))
+                        .then(ClientCommands.literal("income")
+                                .executes(ctx -> {
+                                    reply(ctx, IncomeStats.summary());
+                                    return 1;
+                                })
+                                .then(ClientCommands.literal("clear").executes(ctx -> {
+                                    reply(ctx, IncomeStats.clear());
+                                    return 1;
+                                })))
+                        .then(ClientCommands.literal("watch")
+                                .executes(ctx -> {
+                                    reply(ctx, ShopWatch.listText());
+                                    return 1;
+                                })
+                                .then(ClientCommands.literal("list").executes(ctx -> {
+                                    reply(ctx, ShopWatch.listText());
+                                    return 1;
+                                }))
+                                .then(ClientCommands.literal("on").executes(ctx -> {
+                                    reply(ctx, ShopWatch.setEnabled(true));
+                                    return 1;
+                                }))
+                                .then(ClientCommands.literal("off").executes(ctx -> {
+                                    reply(ctx, ShopWatch.setEnabled(false));
+                                    return 1;
+                                }))
+                                .then(ClientCommands.literal("add")
+                                        .then(ClientCommands.argument("名字", StringArgumentType.word())
+                                                .executes(ctx -> {
+                                                    reply(ctx, ShopWatch.add(StringArgumentType.getString(ctx, "名字")));
+                                                    return 1;
+                                                })))
+                                .then(ClientCommands.literal("del")
+                                        .then(ClientCommands.argument("名字", StringArgumentType.word())
+                                                .executes(ctx -> {
+                                                    reply(ctx, ShopWatch.remove(StringArgumentType.getString(ctx, "名字")));
+                                                    return 1;
+                                                }))))
+                        .then(ClientCommands.literal("recipe")
+                                .then(ClientCommands.argument("物品", StringArgumentType.greedyString())
+                                        .executes(ctx -> {
+                                            reply(ctx, RecipeInfo.summary(StringArgumentType.getString(ctx, "物品")));
+                                            return 1;
+                                        })))
+                        .then(ClientCommands.literal("use")
+                                .then(ClientCommands.argument("物品", StringArgumentType.greedyString())
+                                        .executes(ctx -> {
+                                            reply(ctx, RecipeInfo.summary(StringArgumentType.getString(ctx, "物品")));
+                                            return 1;
+                                        })))
+                        .then(ClientCommands.literal("quote")
+                                .executes(ctx -> {
+                                    reply(ctx, QuoteActions.lastText());
+                                    return 1;
+                                })
+                                .then(ClientCommands.literal("copy").executes(ctx -> {
+                                    reply(ctx, QuoteActions.copyLast());
+                                    return 1;
+                                }))
+                                .then(ClientCommands.literal("clear").executes(ctx -> {
+                                    reply(ctx, QuoteActions.clear());
+                                    return 1;
+                                })))
                         .then(ClientCommands.literal("help").executes(ctx -> {
                             reply(ctx, helpText());
                             return 1;
@@ -286,6 +433,9 @@ public final class InfoCommands {
         sb.append("行情：").append(Market.line()).append('\n');
         sb.append("商店广告：").append(ShopAd.line()).append('\n');
         sb.append("商店地图：").append(SignShop.count()).append(" 家店").append('\n');
+        sb.append("收购榜：").append(BuyBoard.count()).append(" 种　补货缺口：")
+                .append(Stock.gapCount(mc)).append(" 种\n");
+        sb.append(IncomeStats.dayLine(mc)).append('\n');
         sb.append(Worth.summary(mc));
         reply(ctx, sb.toString());
         return 1;
@@ -321,6 +471,16 @@ public final class InfoCommands {
                 "/info sign scan       立刻扫一遍周围区块",
                 "/info sign clear      清空本号商店地图",
                 "/info worth           背包总市值 + 最值钱的 5 样",
+                "/info buy             全服收购榜；/info buy 钻石 看单品",
+                "/info flip            搬砖套利（买店→最高收价）",
+                "/info stock           补货清单；set 钻石 64 / plan 排采购顺序",
+                "/info chest 钻石       上次在哪个箱子见过（只记开过的箱子）",
+                "/info history 钻石     行情日线 + 7 日均价",
+                "/info loss            上次死亡损失估值",
+                "/info income          今日背包净增/经验",
+                "/info watch add 名字   订阅店主，上新/降价提醒",
+                "/info recipe 钻石      合成配方 + 能做什么",
+                "/info quote           上次报价的 /msg 回复；copy 复制",
                 "/info server           服务器名、在线人数、你的延迟",
                 "/info hud on|off       左上角悬浮板（游戏里按 I）",
                 "/info reload          重读 信息工具配置.txt");

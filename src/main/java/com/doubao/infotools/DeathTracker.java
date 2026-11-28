@@ -112,6 +112,7 @@ public final class DeathTracker {
                     StandardOpenOption.CREATE, StandardOpenOption.APPEND);
             Notify.alert("记录死亡点 " + lastX + "," + lastY + "," + lastZ
                     + "（掉落物 5 分钟后消失，快回去捡）");
+            DeathLoss.record(mc);
         } catch (Throwable t) {
             InfoTools.LOGGER.warn("记死亡点失败", t);
         }

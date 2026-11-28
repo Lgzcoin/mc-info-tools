@@ -188,6 +188,15 @@ public final class LookCard {
         if (price != null && price.any()) {
             out.add("§7这格参考 §f" + Worth.money(price.reference() * stack.getCount()));
         }
+
+        if (id != null) {
+            BuyBoard.Offer buyer = BuyBoard.bestOffer(id);
+            if (buyer != null) {
+                out.add("§7最高收 §f" + num(buyer.price()) + "/个 §8"
+                        + (buyer.shop() ? buyer.where() : "聊天"));
+            }
+        }
+        out.addAll(RecipeInfo.cardLines(stack));
         return out;
     }
 
