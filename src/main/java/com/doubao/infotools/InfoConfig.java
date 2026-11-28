@@ -25,12 +25,16 @@ public final class InfoConfig {
     public boolean chestIndexEnabled = true;
     public boolean incomeEnabled = true;
     public boolean historyEnabled = true;
+    public boolean acquireEnabled = true;
+    public boolean acquireAlert = false;
     public int priceDiscountPercent = 80;
     public int arbitragePercent = 10;
     public final List<String> shopKeywords = new ArrayList<>(Arrays.asList(
             "商店", "店铺", "摊位", "促销", "特价", "甩卖", "上新", "批发"));
     public final List<String> keywords = new ArrayList<>(Arrays.asList(
             "管理员", "清人", "重启", "封号", "封禁", "TPA", "交易", "收人"));
+    public final List<String> acquireKeywords = new ArrayList<>(Arrays.asList(
+            "收", "求购", "收购"));
     public final List<String> watchedShops = new ArrayList<>();
     public int assetSnapSeconds = 60;
     public int dropWarnSeconds = 60;
@@ -77,6 +81,17 @@ public final class InfoConfig {
                     case "开箱索引" -> c.chestIndexEnabled = bool(val, true);
                     case "收益统计" -> c.incomeEnabled = bool(val, true);
                     case "行情日线" -> c.historyEnabled = bool(val, true);
+                    case "收购记录" -> c.acquireEnabled = bool(val, true);
+                    case "收购提示" -> c.acquireAlert = bool(val, true);
+                    case "收购关键词" -> {
+                        c.acquireKeywords.clear();
+                        for (String s2 : val.split("[,，、]")) {
+                            String k = s2.trim();
+                            if (!k.isEmpty()) {
+                                c.acquireKeywords.add(k);
+                            }
+                        }
+                    }
                     case "比价便宜线" -> c.priceDiscountPercent = clamp(parseInt(val, 80), 30, 99);
                     case "套利线" -> c.arbitragePercent = clamp(parseInt(val, 10), 1, 99);
                     case "商店关键词" -> {
@@ -134,6 +149,9 @@ public final class InfoConfig {
             sb.append("# 开箱索引：开 / 关（打开箱子时记内容，/info chest 查）\n");
             sb.append("# 收益统计：开 / 关（每分钟记背包净增和经验）\n");
             sb.append("# 行情日线：开 / 关（每天第一次进游戏快照行情）\n");
+            sb.append("# 收购记录：开 / 关（聊天里有人收东西时记下玩家名和物品）\n");
+            sb.append("# 收购提示：开 / 关（记录时是否在聊天框弹一行提示）\n");
+            sb.append("# 收购关键词：聊天里出现这些词就记收购（逗号分隔）\n");
             sb.append("# 套利线：买卖价差达到百分之几才提示（1~99）\n");
             sb.append("# 比价便宜线：卖价低于历史均价的百分之几就提醒（30~99）\n");
             sb.append("# 商店关键词：聊天里出现这些词就把整条记成商店广告（逗号分隔）\n");
@@ -151,6 +169,9 @@ public final class InfoConfig {
             sb.append("开箱索引 = ").append(chestIndexEnabled ? "开" : "关").append('\n');
             sb.append("收益统计 = ").append(incomeEnabled ? "开" : "关").append('\n');
             sb.append("行情日线 = ").append(historyEnabled ? "开" : "关").append('\n');
+            sb.append("收购记录 = ").append(acquireEnabled ? "开" : "关").append('\n');
+            sb.append("收购提示 = ").append(acquireAlert ? "开" : "关").append('\n');
+            sb.append("收购关键词 = ").append(String.join(",", acquireKeywords)).append('\n');
             sb.append("比价 = ").append(priceEnabled ? "开" : "关").append('\n');
             sb.append("套利线 = ").append(arbitragePercent).append('\n');
             sb.append("关注店主 = ").append(String.join(",", watchedShops)).append('\n');

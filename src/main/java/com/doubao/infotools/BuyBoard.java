@@ -64,7 +64,12 @@ public final class BuyBoard {
 
     public static String board() {
         Map<String, List<Offer>> map = byItem();
+        String recent = AcquireLog.recent(5);
         if (map.isEmpty()) {
+            if (!recent.startsWith("还没有")) {
+                return "还没有带价格收购：\n" + recent
+                        + "\n带价格：/info buy 钻石　记录：/info buy log";
+            }
             return "还没有收购价：走近告示牌商店自动扫，聊天里的「收 xxx」也会记。";
         }
         List<Map.Entry<String, List<Offer>>> rows = new ArrayList<>(map.entrySet());
@@ -85,7 +90,10 @@ public final class BuyBoard {
                     .append(e.getValue().size()).append(" 条  ")
                     .append(best.shop() ? best.where() : "聊天");
         }
-        sb.append("\n单品：/info buy 钻石　套利：/info flip");
+        if (!recent.startsWith("还没有")) {
+            sb.append("\n最近收购：\n").append(recent);
+        }
+        sb.append("\n单品：/info buy 钻石　套利：/info flip　记录：/info buy log");
         return sb.toString();
     }
 
@@ -95,8 +103,10 @@ public final class BuyBoard {
             return "认不出「" + text + "」，换个说法（钻石、铁、煤、红石…）。";
         }
         List<Offer> list = byItem().getOrDefault(id, List.of());
+        String recent = AcquireLog.forItem(text);
         if (list.isEmpty()) {
-            return Names.of(id) + "：还没收到收购价。";
+            String base = Names.of(id) + "：还没收到带价格的收购价。";
+            return recent.startsWith("没有") ? base : base + "\n" + recent;
         }
         List<Offer> sorted = new ArrayList<>(list);
         sorted.sort(Comparator.comparingDouble(Offer::price).reversed());
@@ -108,6 +118,9 @@ public final class BuyBoard {
             }
             sb.append('\n').append(fmt(o.price())).append("/个  ")
                     .append(o.shop() ? o.where() : "聊天").append("  ").append(ago(o.time()));
+        }
+        if (!recent.startsWith("没有")) {
+            sb.append("\n").append(recent);
         }
         return sb.toString();
     }

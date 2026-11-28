@@ -264,6 +264,22 @@ public final class InfoCommands {
                                     reply(ctx, BuyBoard.board());
                                     return 1;
                                 })
+                                .then(ClientCommands.literal("log").executes(ctx -> {
+                                    reply(ctx, AcquireLog.recent(15));
+                                    return 1;
+                                }))
+                                .then(ClientCommands.literal("clear").executes(ctx -> {
+                                    AcquireLog.clear();
+                                    reply(ctx, "本号收购记录已清空。");
+                                    return 1;
+                                }))
+                                .then(ClientCommands.literal("who")
+                                        .then(ClientCommands.argument("玩家", StringArgumentType.greedyString())
+                                                .executes(ctx -> {
+                                                    reply(ctx, AcquireLog.byPlayer(
+                                                            StringArgumentType.getString(ctx, "玩家")));
+                                                    return 1;
+                                                })))
                                 .then(ClientCommands.argument("物品", StringArgumentType.greedyString())
                                         .executes(ctx -> {
                                             reply(ctx, BuyBoard.item(StringArgumentType.getString(ctx, "物品")));
@@ -472,6 +488,7 @@ public final class InfoCommands {
                 "/info sign clear      清空本号商店地图",
                 "/info worth           背包总市值 + 最值钱的 5 样",
                 "/info buy             全服收购榜；/info buy 钻石 看单品",
+                "/info buy log         最近谁在收什么；who 玩家 按人查",
                 "/info flip            搬砖套利（买店→最高收价）",
                 "/info stock           补货清单；set 钻石 64 / plan 排采购顺序",
                 "/info chest 钻石       上次在哪个箱子见过（只记开过的箱子）",

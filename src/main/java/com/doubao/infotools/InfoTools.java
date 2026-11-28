@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
  */
 public class InfoTools implements ClientModInitializer {
     public static final String MOD_ID = "infotools";
-    public static final String MOD_VERSION = "1.6.1";
+    public static final String MOD_VERSION = "1.6.2";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
     private static InfoConfig config;
@@ -76,6 +76,7 @@ public class InfoTools implements ClientModInitializer {
 
     private static void onChat(String text, String sender) {
         KeywordAlert.onMessage(text);
+        AcquireLog.onMessage(text, sender);
         Market.onMessage(text);
         ShopAd.onMessage(text, sender);
         ShopWatch.onMessage(text, sender);
