@@ -48,8 +48,29 @@ public final class PriceParser {
         alias("石英", "minecraft:quartz");
         alias("紫水晶", "minecraft:amethyst_shard");
         alias("下界合金锭", "minecraft:netherite_ingot");
+        alias("下界合金块", "minecraft:netherite_block");
+        alias("下界合金碎片", "minecraft:netherite_scrap");
+        alias("下界合金剑", "minecraft:netherite_sword");
+        alias("下界合金斧", "minecraft:netherite_axe");
+        alias("下界合金锹", "minecraft:netherite_shovel");
+        alias("下界合金铲", "minecraft:netherite_shovel");
+        alias("下界合金锄", "minecraft:netherite_hoe");
+        alias("下界合金头盔", "minecraft:netherite_helmet");
+        alias("下界合金胸甲", "minecraft:netherite_chestplate");
+        alias("下界合金护腿", "minecraft:netherite_leggings");
+        alias("下界合金靴子", "minecraft:netherite_boots");
+        alias("下界合金升级模板", "minecraft:netherite_upgrade_smithing_template");
         alias("下界合金", "minecraft:netherite_ingot");
         alias("远古残骸", "minecraft:ancient_debris");
+        alias("金粒", "minecraft:gold_nugget");
+        alias("铁粒", "minecraft:iron_nugget");
+        alias("netherite ingot", "minecraft:netherite_ingot");
+        alias("netherite scrap", "minecraft:netherite_scrap");
+        alias("netherite block", "minecraft:netherite_block");
+        alias("ancient debris", "minecraft:ancient_debris");
+        alias("gold ingot", "minecraft:gold_ingot");
+        alias("iron ingot", "minecraft:iron_ingot");
+        alias("copper ingot", "minecraft:copper_ingot");
         alias("铜锭", "minecraft:copper_ingot");
         alias("粗铜", "minecraft:raw_copper");
         alias("铜", "minecraft:copper_ingot");
@@ -224,18 +245,43 @@ public final class PriceParser {
         return new Quote(item, dir, price, unit, perPiece, s);
     }
 
+    /** 只认“整段就是某个别名”，用于物品显示名，避免把“下界合金锭”当成“金锭”。 */
+    public static String resolveExact(String text) {
+        String n = normalize(text);
+        if (n.isEmpty()) {
+            return null;
+        }
+        for (String cn : ALIAS_ORDER) {
+            if (normalize(cn).equalsIgnoreCase(n)) {
+                return ALIAS.get(cn);
+            }
+        }
+        return null;
+    }
+
     /** 命令里输入的物品名 → 统一 id；也接受 diamond / minecraft:diamond 这种写法。 */
     public static String resolveItem(String text) {
         if (text == null || text.isBlank()) {
             return null;
         }
-        String t = text.trim();
+        String n = normalize(text);
+        String exact = resolveExact(n);
+        if (exact != null) {
+            return exact;
+        }
+        String low = n.toLowerCase();
+        String best = null;
+        int bestLen = -1;
         for (String cn : ALIAS_ORDER) {
-            if (t.contains(cn)) {
-                return ALIAS.get(cn);
+            String key = normalize(cn).toLowerCase();
+            if (!key.isEmpty() && low.contains(key) && key.length() > bestLen) {
+                best = ALIAS.get(cn);
+                bestLen = key.length();
             }
         }
-        String low = t.toLowerCase();
+        if (best != null) {
+            return best;
+        }
         if (low.startsWith("minecraft:")) {
             return low;
         }
@@ -243,6 +289,16 @@ public final class PriceParser {
             return "minecraft:" + low;
         }
         return null;
+    }
+
+    private static String normalize(String s) {
+        if (s == null) {
+            return "";
+        }
+        return s.replaceAll("§.", "")
+                .replace('\u00a0', ' ')
+                .replaceAll("\\s+", "")
+                .trim();
     }
 
     private static int firstIndex(String s, String... words) {

@@ -39,6 +39,18 @@ public final class Names {
             case "amethyst_shard" -> "紫水晶碎片";
             case "netherite_scrap" -> "下界合金碎片";
             case "netherite_ingot" -> "下界合金锭";
+            case "netherite_block" -> "下界合金块";
+            case "netherite_sword" -> "下界合金剑";
+            case "netherite_axe" -> "下界合金斧";
+            case "netherite_shovel" -> "下界合金锹";
+            case "netherite_hoe" -> "下界合金锄";
+            case "netherite_helmet" -> "下界合金头盔";
+            case "netherite_chestplate" -> "下界合金胸甲";
+            case "netherite_leggings" -> "下界合金护腿";
+            case "netherite_boots" -> "下界合金靴子";
+            case "netherite_upgrade_smithing_template" -> "下界合金升级模板";
+            case "gold_nugget" -> "金粒";
+            case "iron_nugget" -> "铁粒";
             case "ancient_debris" -> "远古残骸";
             case "raw_diamond" -> "粗钻石";
             case "raw_emerald" -> "粗绿宝石";

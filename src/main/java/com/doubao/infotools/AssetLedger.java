@@ -385,11 +385,8 @@ public final class AssetLedger {
     }
 
     private static String idOf(ItemStack st) {
-        try {
-            return BuiltInRegistries.ITEM.getKey(st.getItem()).toString();
-        } catch (Throwable t) {
-            return "unknown";
-        }
+        String id = ItemIds.of(st);
+        return id == null ? "unknown" : id;
     }
 
     private static int safeInt(String s) {

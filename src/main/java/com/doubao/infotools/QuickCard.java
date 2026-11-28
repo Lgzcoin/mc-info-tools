@@ -56,14 +56,7 @@ public final class QuickCard {
     }
 
     public static String idOf(ItemStack stack) {
-        if (stack == null || stack.isEmpty()) {
-            return null;
-        }
-        try {
-            return BuiltInRegistries.ITEM.getKey(stack.getItem()).toString();
-        } catch (Throwable t) {
-            return null;
-        }
+        return ItemIds.of(stack);
     }
 
     private static String num(double v) {

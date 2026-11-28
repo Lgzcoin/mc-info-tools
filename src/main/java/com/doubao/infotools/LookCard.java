@@ -285,11 +285,7 @@ public final class LookCard {
     }
 
     private static String idOf(ItemStack stack) {
-        try {
-            return BuiltInRegistries.ITEM.getKey(stack.getItem()).toString();
-        } catch (Throwable t) {
-            return null;
-        }
+        return ItemIds.of(stack);
     }
 
     private static String num(double v) {

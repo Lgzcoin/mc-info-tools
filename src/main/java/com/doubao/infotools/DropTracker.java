@@ -127,7 +127,7 @@ public final class DropTracker {
             if (st == null || st.isEmpty()) {
                 return "物品";
             }
-            return Names.of(net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(st.getItem()).toString())
+            return Names.of(ItemIds.of(st))
                     + "×" + st.getCount();
         } catch (Throwable t) {
             return "物品";
